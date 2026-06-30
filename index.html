@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalkulator Pranoto Mongso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       TOKENS
+    ============================================================ */
+    :root {
+      --c-forest:   #1E3A2F;
+      --c-deep:     #142a22;
+      --c-gold:     #C8963E;
+      --c-gold-lt:  #e0b468;
+      --c-parch:    #F2E8D5;
+      --c-cream:    #FAF6EE;
+      --c-sage:     #7A9E7E;
+      --c-earth:    #6B4423;
+      --c-earth-lt: #8B5A35;
+      --c-muted:    #A89070;
+      --c-text:     #2C1A0E;
+
+      --radius-card: 20px;
+      --radius-sm:   10px;
+      --shadow-card: 0 8px 40px rgba(30,58,47,0.18), 0 2px 8px rgba(30,58,47,0.10);
+      --shadow-btn:  0 4px 18px rgba(200,150,62,0.35);
+
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body:    'Inter', system-ui, sans-serif;
+    }
+
+    /* ============================================================
+       RESET & BASE
+    ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--c-cream);
+      color: var(--c-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 16px 60px;
+    }
+
+    /* ============================================================
+       BACKGROUND TEXTURE
+    ============================================================ */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(122,158,126,0.18) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 90% 90%, rgba(200,150,62,0.10) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ============================================================
+       HEADER
+    ============================================================ */
+    .header {
+      width: 100%;
+      max-width: 680px;
+      padding: 52px 0 12px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-eyebrow {
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--c-sage);
+      margin-bottom: 14px;
+    }
+
+    .header h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.9rem, 5vw, 2.9rem);
+      font-weight: 700;
+      color: var(--c-forest);
+      line-height: 1.18;
+      margin-bottom: 10px;
+    }
+
+    .header h1 em {
+      font-style: italic;
+      color: var(--c-earth);
+    }
+
+    .header-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 18px auto 0;
+      max-width: 320px;
+    }
+
+    .header-divider span {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--c-gold), transparent);
+    }
+
+    .header-divider .diamond {
+      width: 7px;
+      height: 7px;
+      background: var(--c-gold);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    /* ============================================================
+       BATIK ORNAMENT (SVG inline)
+    ============================================================ */
+    .ornament {
+      width: 100%;
+      max-width: 380px;
+      margin: 16px auto 0;
+      opacity: 0.55;
+    }
+
+    /* ============================================================
+       GUIDE CARD
+    ============================================================ */
+    .guide-card {
+      width: 100%;
+      max-width: 640px;
+      background: rgba(255,255,255,0.55);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(200,150,62,0.22);
+      border-radius: var(--radius-card);
+      padding: 28px 32px;
+      margin-top: 32px;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 4px 20px rgba(30,58,47,0.09);
+    }
+
+    .guide-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--c-forest);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .guide-title svg {
+      flex-shrink: 0;
+    }
+
+    .guide-list {
+      list-style: none;
+      counter-reset: guide-counter;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .guide-list li {
+      counter-increment: guide-counter;
+      display: flex;
+      align-items: baseline;
+      gap: 11px;
+      font-size: 0.86rem;
+      font-weight: 400;
+      color: #4a3520;
+      line-height: 1.55;
+    }
+
+    .guide-list li::before {
+      content: counter(guide-counter);
+      min-width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--c-gold);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 600;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    /* ============================================================
+       CALCULATOR CARD
+    ============================================================ */
+    .calc-card {
+      width: 100%;
+      max-width: 640px;
+      background: rgba(255,255,255,0.70);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(200,150,62,0.28);
+      border-radius: var(--radius-card);
+      padding: 38px 40px 36px;
+      margin-top: 24px;
+      position: relative;
+      z-index: 1;
+      box-shadow: var(--shadow-card);
+    }
+
+    .calc-title {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--c-forest);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    /* Date input */
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 26px;
+    }
+
+    .input-group label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--c-earth);
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .input-wrapper svg {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--c-sage);
+      pointer-events: none;
+    }
+
+    input[type="date"] {
+      width: 100%;
+      padding: 14px 18px 14px 46px;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--c-text);
+      background: var(--c-parch);
+      border: 1.5px solid rgba(107,68,35,0.22);
+      border-radius: var(--radius-sm);
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.22s, box-shadow 0.22s;
+      -webkit-appearance: none;
+    }
+
+    input[type="date"]:focus {
+      border-color: var(--c-gold);
+      box-shadow: 0 0 0 3.5px rgba(200,150,62,0.18);
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      opacity: 0;
+      position: absolute;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    /* Button */
+    .btn-hitung {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 15px 24px;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      color: #fff;
+      background: linear-gradient(135deg, var(--c-forest) 0%, #2e5c43 100%);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.18s, box-shadow 0.18s;
+      box-shadow: 0 4px 20px rgba(30,58,47,0.28);
+    }
+
+    .btn-hitung::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #2e5c43 0%, var(--c-forest) 100%);
+      opacity: 0;
+      transition: opacity 0.22s;
+    }
+
+    .btn-hitung:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(30,58,47,0.34);
+    }
+
+    .btn-hitung:hover::before { opacity: 1; }
+
+    .btn-hitung:active { transform: translateY(0); }
+
+    .btn-hitung span, .btn-hitung svg {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ============================================================
+       RESULT CARD
+    ============================================================ */
+    .result-wrapper {
+      width: 100%;
+      max-width: 640px;
+      margin-top: 22px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .result-card {
+      background: linear-gradient(155deg, var(--c-forest) 0%, #24503a 55%, #1a4030 100%);
+      border-radius: var(--radius-card);
+      padding: 0;
+      overflow: hidden;
+      box-shadow: 0 12px 50px rgba(20,42,34,0.38), 0 2px 10px rgba(20,42,34,0.22);
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .result-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Gold top bar */
+    .result-topbar {
+      height: 4px;
+      background: linear-gradient(to right, transparent, var(--c-gold), var(--c-gold-lt), var(--c-gold), transparent);
+    }
+
+    .result-inner {
+      padding: 32px 36px 36px;
+    }
+
+    .result-eyebrow {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--c-gold);
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    /* Batik ornament inside result */
+    .result-ornament {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 24px;
+      opacity: 0.35;
+    }
+
+    /* Big date display */
+    .result-date-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 6px;
+    }
+
+    .result-tanggal {
+      font-family: var(--font-display);
+      font-size: clamp(3.5rem, 12vw, 5.5rem);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .result-suffix {
+      font-family: var(--font-display);
+      font-size: clamp(1rem, 3vw, 1.3rem);
+      font-weight: 400;
+      font-style: italic;
+      color: rgba(255,255,255,0.55);
+    }
+
+    .result-bulan-wrap {
+      text-align: center;
+      margin-bottom: 26px;
+    }
+
+    .result-bulan {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 5vw, 2.2rem);
+      font-weight: 700;
+      color: var(--c-gold-lt);
+      letter-spacing: 0.04em;
+    }
+
+    .result-bulan-no {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.45);
+      margin-top: 3px;
+    }
+
+    /* Divider */
+    .result-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 22px;
+    }
+
+    .result-divider span {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(200,150,62,0.5), transparent);
+    }
+
+    .result-divider .dot {
+      width: 5px;
+      height: 5px;
+      background: var(--c-gold);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Season description */
+    .result-musim-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--c-sage);
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .result-musim {
+      font-family: var(--font-display);
+      font-size: clamp(0.96rem, 2.5vw, 1.08rem);
+      font-weight: 400;
+      font-style: italic;
+      color: rgba(255,255,255,0.88);
+      text-align: center;
+      line-height: 1.65;
+    }
+
+    /* Meta info row */
+    .result-meta {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 1px solid rgba(255,255,255,0.09);
+      flex-wrap: wrap;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .meta-value {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.8);
+    }
+
+    .meta-label {
+      font-size: 0.67rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* Gold bottom bar */
+    .result-bottombar {
+      height: 4px;
+      background: linear-gradient(to right, transparent, var(--c-gold), var(--c-gold-lt), var(--c-gold), transparent);
+    }
+
+    /* ============================================================
+       ERROR MESSAGE
+    ============================================================ */
+    .error-msg {
+      width: 100%;
+      max-width: 640px;
+      margin-top: 16px;
+      padding: 14px 20px;
+      background: rgba(180,60,40,0.10);
+      border: 1px solid rgba(180,60,40,0.30);
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      color: #8B1A08;
+      display: none;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ============================================================
+       REFERENCE TABLE
+    ============================================================ */
+    .ref-card {
+      width: 100%;
+      max-width: 640px;
+      margin-top: 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    details {
+      background: rgba(255,255,255,0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(200,150,62,0.18);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+    }
+
+    summary {
+      list-style: none;
+      padding: 18px 26px;
+      cursor: pointer;
+      font-family: var(--font-display);
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: var(--c-forest);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      user-select: none;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    .summary-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .summary-chevron {
+      transition: transform 0.25s;
+      color: var(--c-gold);
+    }
+
+    details[open] .summary-chevron {
+      transform: rotate(180deg);
+    }
+
+    .ref-table-wrap {
+      padding: 0 20px 20px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 9px 12px;
+      font-weight: 600;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--c-earth);
+      border-bottom: 1.5px solid rgba(107,68,35,0.18);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(107,68,35,0.08);
+      transition: background 0.15s;
+    }
+
+    tbody tr:hover { background: rgba(200,150,62,0.07); }
+    tbody tr:last-child { border-bottom: none; }
+
+    tbody td {
+      padding: 9px 12px;
+      vertical-align: top;
+      color: #3a2510;
+      line-height: 1.45;
+    }
+
+    .td-no {
+      font-weight: 700;
+      color: var(--c-gold);
+      font-size: 0.9rem;
+    }
+
+    .td-nama {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--c-forest);
+    }
+
+    .td-hari { font-variant-numeric: tabular-nums; }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    .footer {
+      width: 100%;
+      max-width: 640px;
+      margin-top: 40px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer p {
+      font-size: 0.75rem;
+      color: var(--c-muted);
+      line-height: 1.6;
+    }
+
+    .footer strong { color: var(--c-earth-lt); }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 520px) {
+      .calc-card  { padding: 28px 22px 26px; }
+      .result-inner { padding: 26px 22px 28px; }
+      .guide-card { padding: 22px 20px; }
+      .result-meta { gap: 18px; }
+    }
+
+    /* ============================================================
+       REDUCED MOTION
+    ============================================================ */
+    @media (prefers-reduced-motion: reduce) {
+      .result-card { transition: none; }
+      .btn-hitung  { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====== HEADER ====== -->
+  <header class="header">
+    <p class="header-eyebrow">Warisan Leluhur Jawa</p>
+    <h1>Kalkulator<br /><em>Pranoto Mongso</em></h1>
+
+    <div class="header-divider">
+      <span></span>
+      <div class="diamond"></div>
+      <span></span>
+    </div>
+
+    <!-- Batik-inspired ornament SVG -->
+    <div class="ornament" aria-hidden="true">
+      <svg viewBox="0 0 380 36" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <!-- repeating parang-like motif -->
+        <g stroke="#C8963E" stroke-width="1.2">
+          <!-- left vine -->
+          <path d="M0 18 Q20 4 40 18 Q60 32 80 18 Q100 4 120 18 Q140 32 160 18 Q180 4 200 18 Q220 32 240 18 Q260 4 280 18 Q300 32 320 18 Q340 4 360 18 Q370 12 380 18" />
+          <!-- dots on peaks -->
+          <circle cx="40"  cy="18" r="2.2" fill="#C8963E" stroke="none"/>
+          <circle cx="120" cy="18" r="2.2" fill="#C8963E" stroke="none"/>
+          <circle cx="200" cy="18" r="2.2" fill="#C8963E" stroke="none"/>
+          <circle cx="280" cy="18" r="2.2" fill="#C8963E" stroke="none"/>
+          <circle cx="360" cy="18" r="2.2" fill="#C8963E" stroke="none"/>
+          <!-- small leaves on each arc crest -->
+          <path d="M20 11 Q30 3 40 11" stroke="#7A9E7E" stroke-width="1"/>
+          <path d="M100 11 Q110 3 120 11" stroke="#7A9E7E" stroke-width="1"/>
+          <path d="M180 11 Q190 3 200 11" stroke="#7A9E7E" stroke-width="1"/>
+          <path d="M260 11 Q270 3 280 11" stroke="#7A9E7E" stroke-width="1"/>
+          <path d="M340 11 Q350 3 360 11" stroke="#7A9E7E" stroke-width="1"/>
+        </g>
+      </svg>
+    </div>
+  </header>
+
+  <!-- ====== GUIDE CARD ====== -->
+  <section class="guide-card" aria-label="Cara Penggunaan">
+    <h2 class="guide-title">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7A9E7E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      Cara Penggunaan
+    </h2>
+    <ol class="guide-list">
+      <li>Klik kolom tanggal di bawah, lalu pilih tanggal Masehi yang ingin kamu konversi.</li>
+      <li>Tekan tombol <strong>Hitung Sekarang</strong>.</li>
+      <li>Hasil konversi berupa tanggal, nama bulan, dan keterangan musim Pranoto Mongso akan muncul otomatis.</li>
+    </ol>
+  </section>
+
+  <!-- ====== CALCULATOR CARD ====== -->
+  <main class="calc-card" aria-label="Form Kalkulator">
+    <h2 class="calc-title">Konversi Tanggal Masehi</h2>
+
+    <div class="input-group">
+      <label for="tgl-input">Pilih Tanggal Masehi</label>
+      <div class="input-wrapper">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <input
+          type="date"
+          id="tgl-input"
+          aria-label="Masukkan tanggal Masehi"
+        />
+      </div>
+    </div>
+
+    <button class="btn-hitung" id="btn-hitung" onclick="hitungPranatoMongso()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Hitung Sekarang</span>
+    </button>
+  </main>
+
+  <!-- ====== ERROR ====== -->
+  <div class="error-msg" id="error-msg" role="alert" aria-live="polite"></div>
+
+  <!-- ====== RESULT ====== -->
+  <section class="result-wrapper" aria-live="polite" aria-atomic="true">
+    <div class="result-card" id="result-card">
+      <div class="result-topbar"></div>
+      <div class="result-inner">
+
+        <p class="result-eyebrow">✦ Hasil Konversi Pranoto Mongso ✦</p>
+
+        <!-- Small ornament inside result -->
+        <div class="result-ornament" aria-hidden="true">
+          <svg viewBox="0 0 200 18" width="200" xmlns="http://www.w3.org/2000/svg" fill="none">
+            <g stroke="#C8963E" stroke-width="1">
+              <path d="M0 9 Q25 2 50 9 Q75 16 100 9 Q125 2 150 9 Q175 16 200 9"/>
+              <circle cx="50"  cy="9" r="2" fill="#C8963E" stroke="none"/>
+              <circle cx="150" cy="9" r="2" fill="#C8963E" stroke="none"/>
+              <circle cx="100" cy="9" r="2.5" fill="#e0b468" stroke="none"/>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Tanggal -->
+        <div class="result-date-row">
+          <span class="result-tanggal" id="r-tanggal">–</span>
+          <span class="result-suffix" id="r-suffix"></span>
+        </div>
+
+        <!-- Nama Bulan -->
+        <div class="result-bulan-wrap">
+          <div class="result-bulan" id="r-bulan">–</div>
+          <div class="result-bulan-no" id="r-bulan-no"></div>
+        </div>
+
+        <!-- Divider -->
+        <div class="result-divider">
+          <span></span><div class="dot"></div><span></span><div class="dot"></div><span></span>
+        </div>
+
+        <!-- Musim -->
+        <p class="result-musim-label">Keterangan Musim</p>
+        <p class="result-musim" id="r-musim">–</p>
+
+        <!-- Meta -->
+        <div class="result-meta">
+          <div class="meta-item">
+            <span class="meta-value" id="r-tanggal-masehi">–</span>
+            <span class="meta-label">Tanggal Masehi</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-value" id="r-tahun-siklus">–</span>
+            <span class="meta-label">Awal Siklus</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-value" id="r-hari-ke">–</span>
+            <span class="meta-label">Hari ke-</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="result-bottombar"></div>
+    </div>
+  </section>
+
+  <!-- ====== REFERENCE TABLE ====== -->
+  <section class="ref-card" aria-label="Tabel Referensi Bulan">
+    <details>
+      <summary>
+        <span class="summary-left">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C8963E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+          Tabel Referensi 12 Bulan Pranoto Mongso
+        </span>
+        <svg class="summary-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </summary>
+      <div class="ref-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nama Bulan</th>
+              <th>Jumlah Hari</th>
+              <th>Mulai (Masehi)</th>
+              <th>Keterangan Musim</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="td-no">1</td><td class="td-nama">Kasa</td><td class="td-hari">41</td><td>22 Jun</td><td>Daun-daun gugur, pohon jadi gundul.</td></tr>
+            <tr><td class="td-no">2</td><td class="td-nama">Karo</td><td class="td-hari">24</td><td>2 Agu</td><td>Tanah jadi gersang dan retak-retak.</td></tr>
+            <tr><td class="td-no">3</td><td class="td-nama">Katigo</td><td class="td-hari">24</td><td>26 Agu</td><td>Pucuk tanaman menjalar pada rambatan.</td></tr>
+            <tr><td class="td-no">4</td><td class="td-nama">Kapat</td><td class="td-hari">25</td><td>19 Sep</td><td>Sumber-sumber air jadi kering.</td></tr>
+            <tr><td class="td-no">5</td><td class="td-nama">Kalimo</td><td class="td-hari">27</td><td>14 Okt</td><td>Mulai musim Hujan.</td></tr>
+            <tr><td class="td-no">6</td><td class="td-nama">Kanem</td><td class="td-hari">43</td><td>10 Nov</td><td>Pohon-pohon mulai berbuah.</td></tr>
+            <tr><td class="td-no">7</td><td class="td-nama">Kapitu</td><td class="td-hari">42</td><td>23 Des</td><td>Tiupan angin mengandung bias (penyakit).</td></tr>
+            <tr><td class="td-no">8</td><td class="td-nama">Kawolu</td><td class="td-hari">26</td><td>3 Feb</td><td>Kucing kawin, padi berbuah, banyak uret.</td></tr>
+            <tr><td class="td-no">9</td><td class="td-nama">Kasongo</td><td class="td-hari">25</td><td>1 Mar</td><td>Musim jangkrik, gasir, gareng poun.</td></tr>
+            <tr><td class="td-no">10</td><td class="td-nama">Kasepuluh</td><td class="td-hari">23</td><td>26 Mar</td><td>Binatang-binatang hamil.</td></tr>
+            <tr><td class="td-no">11</td><td class="td-nama">Dastho</td><td class="td-hari">24</td><td>18 Apr</td><td>Burung-burung menyuapi anaknya.</td></tr>
+            <tr><td class="td-no">12</td><td class="td-nama">Sodo</td><td class="td-hari">41 / 42*</td><td>12 Mei</td><td>Musim dingin, jarang berkeringat.</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:0.72rem;color:var(--c-muted);margin-top:10px;padding:0 2px;">* Sodo berjumlah 42 hari jika tahun Masehi di mana Sodo berakhir adalah tahun Kabisat (habis dibagi 4).</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <p><strong>Pranoto Mongso</strong> adalah sistem penanggalan musim tradisional Jawa yang diciptakan oleh <strong>Sri Sultan Hamengkubuwono I</strong>. Digunakan para petani dan nelayan untuk membaca tanda-tanda alam.</p>
+  </footer>
+
+  <!-- ================================================================
+       JAVASCRIPT — LOGIKA PERHITUNGAN
+  ================================================================ -->
+  <script>
+    /* ----------------------------------------------------------------
+       DATA BULAN PRANOTO MONGSO
+    ---------------------------------------------------------------- */
+    const BULAN_PM = [
+      { no: 1,  nama: "Kasa",       hari: 41, musim: "Musim daun-daun gugur, pohon-pohon menjadi gundul." },
+      { no: 2,  nama: "Karo",       hari: 24, musim: "Musim tanah menjadi gersang dan retak-retak." },
+      { no: 3,  nama: "Katigo",     hari: 24, musim: "Musim pucuk tanaman menjalar pada rambatan." },
+      { no: 4,  nama: "Kapat",      hari: 25, musim: "Musim sumber-sumber mata air menjadi kering." },
+      { no: 5,  nama: "Kalimo",     hari: 27, musim: "Mulai musim Hujan." },
+      { no: 6,  nama: "Kanem",      hari: 43, musim: "Musim pohon-pohon mulai berbuah." },
+      { no: 7,  nama: "Kapitu",     hari: 42, musim: "Musim tiupan angin mengandung bias (penyakit)." },
+      { no: 8,  nama: "Kawolu",     hari: 26, musim: "Musim kucing kawin, padi berbuah, banyak uret." },
+      { no: 9,  nama: "Kasongo",    hari: 25, musim: "Musim jangkrik, gasir, gareng poun — banyak orang bicara berlebih-lebihan." },
+      { no: 10, nama: "Kasepuluh",  hari: 23, musim: "Musim binatang-binatang hamil." },
+      { no: 11, nama: "Dastho",     hari: 24, musim: "Musim burung-burung menyuapi anaknya." },
+      { no: 12, nama: "Sodo",       hari: 41, musim: "Musim dingin, jarang berkeringat karena dingin." },
+    ];
+
+    /* ----------------------------------------------------------------
+       HELPER: Apakah tahun Masehi adalah tahun kabisat?
+    ---------------------------------------------------------------- */
+    function isLeapYear(year) {
+      return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    }
+
+    /* ----------------------------------------------------------------
+       HELPER: Hitung selisih hari antara dua objek Date (UTC-safe)
+       Mengembalikan jumlah hari bulat dari tgl1 ke tgl2.
+    ---------------------------------------------------------------- */
+    function selisihHari(tgl1, tgl2) {
+      const MS_PER_DAY = 86400000;
+      // Strip waktu agar hanya tanggal yang dihitung
+      const d1 = Date.UTC(tgl1.getFullYear(), tgl1.getMonth(), tgl1.getDate());
+      const d2 = Date.UTC(tgl2.getFullYear(), tgl2.getMonth(), tgl2.getDate());
+      return Math.round((d2 - d1) / MS_PER_DAY);
+    }
+
+    /* ----------------------------------------------------------------
+       FUNGSI UTAMA: Konversi tanggal Masehi → Pranoto Mongso
+       Input : string "YYYY-MM-DD"
+       Output: objek hasil, atau null jika tidak valid
+    ---------------------------------------------------------------- */
+    function konversiPM(dateStr) {
+      if (!dateStr) return null;
+
+      // Parsing tanpa distorsi zona waktu
+      const parts = dateStr.split('-');
+      const tahun = parseInt(parts[0], 10);
+      const bulan = parseInt(parts[1], 10);  // 1-indexed
+      const hari  = parseInt(parts[2], 10);
+
+      const tglInput = new Date(tahun, bulan - 1, hari); // local date object
+
+      /* 1. Tentukan tahun awal siklus (Tahun Kasa)
+            Siklus dimulai 22 Juni.
+            Jika input < 22 Juni tahun ini → siklus mulai 22 Juni TAHUN LALU
+            Jika input >= 22 Juni tahun ini → siklus mulai 22 Juni TAHUN INI          */
+      let tahunKasa;
+      const batasSiklus = new Date(tahun, 5, 22); // 22 Juni (bulan 5 = Juni, 0-indexed)
+
+      if (tglInput < batasSiklus) {
+        tahunKasa = tahun - 1;
+      } else {
+        tahunKasa = tahun;
+      }
+
+      const tglAwalSiklus = new Date(tahunKasa, 5, 22); // 22 Juni tahunKasa
+
+      /* 2. Cek apakah tahun (tahunKasa + 1) adalah kabisat
+            Karena bulan Sodo berada di rentang Mei–Juni tahun (tahunKasa + 1)          */
+      const tahunSodo = tahunKasa + 1;
+      const sodoDays  = isLeapYear(tahunSodo) ? 42 : 41;
+
+      /* 3. Buat salinan data bulan dengan hari Sodo yang sudah disesuaikan */
+      const bulanList = BULAN_PM.map((b, idx) => {
+        if (idx === 11) { // Sodo (index 11)
+          return { ...b, hari: sodoDays };
+        }
+        return { ...b };
+      });
+
+      /* 4. Hitung selisih hari dari awal siklus ke tanggal input */
+      let sisaHari = selisihHari(tglAwalSiklus, tglInput);
+      const hariKe = sisaHari + 1; // hari ke-N dalam siklus (1-based)
+
+      /* 5. Iterasi bulan untuk menemukan posisi */
+      let bulanDitemukan = null;
+      let tglDalamBulan  = 0;
+
+      for (let i = 0; i < bulanList.length; i++) {
+        const jumlahHari = bulanList[i].hari;
+        if (sisaHari < jumlahHari) {
+          bulanDitemukan = bulanList[i];
+          tglDalamBulan  = sisaHari + 1; // 1-based
+          break;
+        }
+        sisaHari -= jumlahHari;
+      }
+
+      /* Jika sisaHari melebihi total hari satu siklus
+         (seharusnya tidak terjadi jika input valid) */
+      if (!bulanDitemukan) return null;
+
+      /* 6. Format tanggal Masehi untuk tampilan */
+      const namaBulanMasehi = [
+        "Januari","Februari","Maret","April","Mei","Juni",
+        "Juli","Agustus","September","Oktober","November","Desember"
+      ];
+      const tglMasehiStr = `${hari} ${namaBulanMasehi[bulan - 1]} ${tahun}`;
+      const awalSiklusStr = `22 Juni ${tahunKasa}`;
+
+      return {
+        tanggal:       tglDalamBulan,
+        bulan:         bulanDitemukan,
+        hariKe:        hariKe,
+        tglMasehiStr:  tglMasehiStr,
+        awalSiklusStr: awalSiklusStr,
+      };
+    }
+
+    /* ----------------------------------------------------------------
+       ORDINAL SUFFIX (opsional, untuk tampilan "1 Kasa", "2 Karo", dll.)
+    ---------------------------------------------------------------- */
+    function ordinalJawa(n) {
+      return n; // Angka saja sudah cukup untuk Pranoto Mongso
+    }
+
+    /* ----------------------------------------------------------------
+       TAMPILKAN HASIL / ERROR
+    ---------------------------------------------------------------- */
+    function tampilkanError(pesan) {
+      const el = document.getElementById('error-msg');
+      el.textContent = pesan;
+      el.style.display = 'block';
+
+      const card = document.getElementById('result-card');
+      card.classList.remove('visible');
+    }
+
+    function sembunyikanError() {
+      document.getElementById('error-msg').style.display = 'none';
+    }
+
+    function tampilkanHasil(hasil) {
+      document.getElementById('r-tanggal').textContent = hasil.tanggal;
+      document.getElementById('r-suffix').textContent  = '';
+      document.getElementById('r-bulan').textContent   = hasil.bulan.nama;
+      document.getElementById('r-bulan-no').textContent =
+        `Bulan ke-${hasil.bulan.no} dalam Pranoto Mongso · ${hasil.bulan.hari} hari`;
+      document.getElementById('r-musim').textContent     = hasil.bulan.musim;
+      document.getElementById('r-tanggal-masehi').textContent = hasil.tglMasehiStr;
+      document.getElementById('r-tahun-siklus').textContent   = hasil.awalSiklusStr;
+      document.getElementById('r-hari-ke').textContent        = hasil.hariKe;
+
+      // Trigger animasi
+      const card = document.getElementById('result-card');
+      card.classList.remove('visible');
+      // Force reflow agar transition berjalan ulang
+      void card.offsetWidth;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          card.classList.add('visible');
+        });
+      });
+
+      // Scroll ke hasil (mobile friendly)
+      setTimeout(() => {
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+    }
+
+    /* ----------------------------------------------------------------
+       HANDLER TOMBOL HITUNG
+    ---------------------------------------------------------------- */
+    function hitungPranatoMongso() {
+      sembunyikanError();
+
+      const input = document.getElementById('tgl-input').value;
+
+      if (!input) {
+        tampilkanError('⚠ Silakan pilih tanggal terlebih dahulu sebelum menghitung.');
+        return;
+      }
+
+      const hasil = konversiPM(input);
+
+      if (!hasil) {
+        tampilkanError('⚠ Terjadi kesalahan dalam perhitungan. Pastikan tanggal yang dimasukkan valid.');
+        return;
+      }
+
+      tampilkanHasil(hasil);
+    }
+
+    /* ----------------------------------------------------------------
+       ENTER KEY SUPPORT pada input
+    ---------------------------------------------------------------- */
+    document.getElementById('tgl-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') hitungPranatoMongso();
+    });
+
+    /* ----------------------------------------------------------------
+       SET DEFAULT DATE = HARI INI
+    ---------------------------------------------------------------- */
+    (function setDefaultDate() {
+      const today = new Date();
+      const yyyy  = today.getFullYear();
+      const mm    = String(today.getMonth() + 1).padStart(2, '0');
+      const dd    = String(today.getDate()).padStart(2, '0');
+      document.getElementById('tgl-input').value = `${yyyy}-${mm}-${dd}`;
+    })();
+  </script>
+</body>
+</html>
